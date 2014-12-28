@@ -57,9 +57,9 @@ addRains <- function(dataset) {
 }
 
 addDayLightSaving <- function(dataset) {
-  dataset$spring[dataset$season == 1] <- 1
-  dataset$spring[dataset$season != 1] <- 0
-  dataset$spring <- as.factor(dataset$spring)
+  dataset$daylight[dataset$month %in% c(9,10,11,0,1,2)] <- 1
+  dataset$daylight[dataset$month %in% c(3,4,5,6,7,8)] <- 0
+  dataset$daylight <- as.factor(dataset$daylight)
   return (dataset)
 }
 
@@ -105,4 +105,21 @@ augmentDaypart <- function(dataset) {
   #convert hour back to factor
   dataset$hour <- as.factor(dataset$hour)
   return (dataset)
+}
+
+addBusyAndEasyTime <- function(dataset) {
+  dataset$winter[dataset$season == 1 | dataset$season == 4] <- 0
+  dataset$winter[dataset$season == 2 | dataset$season == 3] <- 1
+  dataset$winter <- as.factor(dataset$winter)
+
+  dataset$rain[dataset$weather == 4 | dataset$weather == 3] <- 0
+  dataset$rain[dataset$weather == 2 | dataset$weather == 1] <- 1
+  dataset$rain <- as.factor(dataset$rain)
+  return (dataset)
+}
+
+plotHourVsWeekdayGraph <- function(type, dataset) {
+  day_hour_count <- aggregate(dataset[,type], list(dataset$weekday,dataset$hour), mean)
+  day_hour_count$hour <- as.numeric(as.character(day_hour_count$Group.2))
+  ggplot(day_hour_count, aes(x = hour, y = Group.1)) + geom_tile(aes(fill = x)) + scale_fill_gradient(name="Average Counts", low="white", high="green") + theme(axis.title.y = element_blank())
 }
